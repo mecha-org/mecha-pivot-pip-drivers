@@ -1,0 +1,8 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+config MECHA_PIP_CORE
+	bool "Mecha Pivot Pip signal processing library"
+	help
+	  Filtering, idle centre tracking, deadzone and response curve of the Mecha
+	  Pivot Pip. Selected by the Pivot Pip driver.

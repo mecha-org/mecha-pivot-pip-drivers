@@ -1,0 +1,31 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+config INPUT_MECHA_PIVOT_PIP
+	bool "Mecha Pivot Pip input driver"
+	default y
+	depends on DT_HAS_MECHA_PIVOT_PIP_ENABLED
+	depends on MULTITHREADING
+	select ADC
+	select MECHA_PIP_CORE
+	help
+	  Mecha Pivot Pip, an analog pointing stick read through two ADC channels.
+	  It reports absolute or relative input events.
+
+if INPUT_MECHA_PIVOT_PIP
+
+config INPUT_MECHA_PIVOT_PIP_THREAD_STACK_SIZE
+	int "Stack size for the Pivot Pip thread"
+	default 768
+	help
+	  Size of the stack used for the Pivot Pip thread. It reads the ADC and reports
+	  the input events. With CONFIG_INPUT_MODE_SYNCHRONOUS the input callbacks also
+	  run on this stack, so raise it if they are deep.
+
+config INPUT_MECHA_PIVOT_PIP_THREAD_PRIORITY
+	int "Priority for the Pivot Pip thread"
+	default 0
+	help
+	  Priority level of the Pivot Pip thread.
+
+endif # INPUT_MECHA_PIVOT_PIP

@@ -1,0 +1,58 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+name: Style
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  style:
+    name: clang-format and checkpatch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: mecha-pivot-pip-zephyr
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: 3.12
+
+      # A fixed version, so that a new release of clang-format cannot break the build.
+      - name: Install clang-format
+        run: pip install clang-format==18.1.8
+
+      - name: Check the formatting
+        working-directory: mecha-pivot-pip-zephyr
+        run: git ls-files '*.c' '*.h' | xargs clang-format --dry-run -Werror
+
+      # Only the scripts of Zephyr are needed, using the revision from west.yml.
+      - name: Fetch checkpatch
+        run: |
+          revision=$(yq '.manifest.projects[] | select(.name == "zephyr") | .revision' \
+            mecha-pivot-pip-zephyr/west.yml)
+          git clone --depth 1 --filter=blob:none --sparse --branch "$revision" \
+            https://github.com/zephyrproject-rtos/zephyr zephyr
+          git -C zephyr sparse-checkout set scripts
+
+      - name: Check the coding style
+        working-directory: zephyr
+        run: |
+          status=0
+          for file in $(git -C ../mecha-pivot-pip-zephyr ls-files '*.c' '*.h'); do
+            perl scripts/checkpatch.pl --no-tree --show-types -f "../mecha-pivot-pip-zephyr/$file" || status=1
+          done
+          exit $status

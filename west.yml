@@ -1,0 +1,20 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+# The latest Zephyr release.
+#
+# This is the workspace for developing and testing the module on its own. Products do
+# not use it: they list this repository in their own manifest, and west ignores the
+# manifest of a project that is not imported.
+#
+# Other Zephyr versions: west-zephyr-*.yml, selected with
+# west init -l --mf <file> mecha-pivot-pip-zephyr
+
+manifest:
+  projects:
+    - name: zephyr
+      url: https://github.com/zephyrproject-rtos/zephyr
+      revision: v4.5.0
+      west-commands: scripts/west-commands.yml
+  self:
+    path: mecha-pivot-pip-zephyr
