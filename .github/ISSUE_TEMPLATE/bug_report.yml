@@ -1,0 +1,30 @@
+name: Bug report
+description: Something does not work as described.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Zephyr or ZMK version, and the version of this module.
+    validations:
+      required: true
+  - type: textarea
+    id: devicetree
+    attributes:
+      label: Devicetree
+      description: The node of the Pivot Pip and of the ADC it is read through.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Output with CONFIG_INPUT_LOG_LEVEL_DBG=y, if you have it.
+      render: shell

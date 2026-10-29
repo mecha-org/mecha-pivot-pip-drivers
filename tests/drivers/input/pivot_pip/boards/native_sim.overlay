@@ -1,0 +1,135 @@
+/*
+ * Copyright (c) 2026 Mecha Systems
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#include <zephyr/dt-bindings/adc/adc.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+	adc0: adc {
+		compatible = "zephyr,adc-emul";
+		nchannels = <2>;
+		ref-internal-mv = <3300>;
+		#io-channel-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		channel@0 {
+			reg = <0>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+
+		channel@1 {
+			reg = <1>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <12>;
+		};
+	};
+
+	/* Defaults everywhere except the size of the stick and the sample time. */
+	pivot_pip: pivot-pip {
+		compatible = "mecha,pivot-pip";
+		io-channels = <&adc0 0>, <&adc0 1>;
+		io-channel-names = "x", "y";
+		full-scale = <1000>;
+		poll-period-ms = <4>;
+	};
+
+	/* Everything that can differ from the defaults, on the same two channels. */
+	pivot_pip_custom: pivot-pip-custom {
+		compatible = "mecha,pivot-pip";
+		io-channels = <&adc0 0>, <&adc0 1>;
+		io-channel-names = "x", "y";
+		full-scale = <1000>;
+		poll-period-ms = <4>;
+		mode = "absolute";
+		rel-codes = <INPUT_REL_RX INPUT_REL_RY>;
+		abs-codes = <INPUT_ABS_RX INPUT_ABS_RY>;
+		deadzone-percent = <10>;
+		swapped-x-y;
+		inverted-x;
+	};
+
+	/* An ADC wider than 16 bits, whose samples do not fit the driver. */
+	adc1: adc-wide {
+		compatible = "zephyr,adc-emul";
+		nchannels = <2>;
+		ref-internal-mv = <3300>;
+		#io-channel-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		channel@0 {
+			reg = <0>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <24>;
+		};
+
+		channel@1 {
+			reg = <1>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <24>;
+		};
+	};
+
+	pivot_pip_wide: pivot-pip-wide {
+		compatible = "mecha,pivot-pip";
+		io-channels = <&adc1 0>, <&adc1 1>;
+		io-channel-names = "x", "y";
+		full-scale = <1000>;
+	};
+
+	/* A single-ended 16 bit ADC, which counts from 0 to 65535. */
+	adc2: adc-16bit {
+		compatible = "zephyr,adc-emul";
+		nchannels = <2>;
+		ref-internal-mv = <3300>;
+		#io-channel-cells = <1>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		channel@0 {
+			reg = <0>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <16>;
+		};
+
+		channel@1 {
+			reg = <1>;
+			zephyr,gain = "ADC_GAIN_1";
+			zephyr,reference = "ADC_REF_INTERNAL";
+			zephyr,vref-mv = <3300>;
+			zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+			zephyr,resolution = <16>;
+		};
+	};
+
+	pivot_pip_16bit: pivot-pip-16bit {
+		compatible = "mecha,pivot-pip";
+		io-channels = <&adc2 0>, <&adc2 1>;
+		io-channel-names = "x", "y";
+		full-scale = <2000>;
+		poll-period-ms = <4>;
+	};
+};

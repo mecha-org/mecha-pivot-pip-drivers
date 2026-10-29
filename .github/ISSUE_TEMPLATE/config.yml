@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Community Forum
+    url: https://forum.mecha.so
+    about: Questions, setup help and discussion. GitHub issues are for bugs and feature requests.
+  - name: Discord Chat
+    url: https://discord.gg/VGrZNFPycX
+    about: Quick questions and chat.

@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+name: mecha-pivot-pip
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .
+samples:
+  - samples
+tests:
+  - tests

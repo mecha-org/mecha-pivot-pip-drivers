@@ -1,0 +1,65 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+name: Test
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  twister:
+    name: Tests on ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Zephyr main is there to show early what the next release breaks.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Zephyr (ZMK)
+            manifest: west-zephyr-zmk.yml
+            experimental: false
+          - name: Zephyr (release)
+            manifest: west.yml
+            experimental: false
+          - name: Zephyr (main)
+            manifest: west-zephyr-main.yml
+            experimental: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: mecha-pivot-pip-zephyr
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: 3.12
+
+      - name: Setup Zephyr project
+        uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1.0.15
+        with:
+          app-path: mecha-pivot-pip-zephyr
+          manifest-file-name: ${{ matrix.manifest }}
+          ccache-cache-key: ${{ matrix.manifest }}
+
+      - name: Show the Zephyr that is tested
+        working-directory: mecha-pivot-pip-zephyr
+        run: |
+          west list -f '{name}: {url} @ {revision} ({sha})' zephyr
+
+      - name: Run tests and samples
+        working-directory: mecha-pivot-pip-zephyr
+        run: west twister -T tests -T samples -v --inline-logs --integration

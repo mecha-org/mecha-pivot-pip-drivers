@@ -1,0 +1,130 @@
+# Copyright (c) 2026 Mecha Systems
+# SPDX-License-Identifier: BSD-3-Clause
+
+description: |
+  Mecha Pivot Pip, an analog pointing stick read through two ADC channels.
+
+  Example:
+
+    #include <zephyr/dt-bindings/input/input-event-codes.h>
+
+    pivot_pip: pivot-pip {
+            compatible = "mecha,pivot-pip";
+            io-channels = <&ads1115 0>, <&ads1115 1>;
+            io-channel-names = "x", "y";
+            full-scale = <800>;
+            abs-codes = <INPUT_ABS_RX INPUT_ABS_RY>;
+    };
+
+  The stick must be at rest at start-up. Its idle centre is measured then and
+  followed while the stick is idle. If the stick was pressed at start-up, let go of
+  it and call pivot_pip_recalibrate(). Both channels must belong to the same ADC
+  and use the same resolution and oversampling.
+
+compatible: "mecha,pivot-pip"
+
+include: base.yaml
+
+properties:
+  io-channels:
+    type: phandle-array
+    required: true
+    description: The two ADC channels of the stick, named by io-channel-names.
+
+  io-channel-names:
+    type: string-array
+    required: true
+    description: Names of the two channels, "x" and "y", in any order.
+
+  full-scale:
+    type: int
+    required: true
+    description: |
+      Deflection from the idle centre, in raw ADC counts, at full stick travel.
+      The percent properties below are fractions of this value.
+
+  poll-period-ms:
+    type: int
+    default: 8
+    description: |
+      Time between samples. Pointer speed and the recentering time follow the
+      measured time between samples, so they stay correct if the ADC cannot keep
+      up with this period.
+
+  mode:
+    type: string
+    default: "relative"
+    enum:
+      - "relative"
+      - "absolute"
+    description: |
+      Kind of events reported at start-up. In relative mode the axes drive pointer
+      motion through a fixed response curve. In absolute mode they are reported
+      linearly from -32767 to 32767. Can be changed with pivot_pip_set_mode().
+
+  rel-codes:
+    type: array
+    default: [0, 1]
+    description: |
+      Input event codes of the X and Y axes in relative mode. Defaults to
+      INPUT_REL_X and INPUT_REL_Y.
+
+  abs-codes:
+    type: array
+    default: [0, 1]
+    description: |
+      Input event codes of the X and Y axes in absolute mode. Defaults to
+      INPUT_ABS_X and INPUT_ABS_Y.
+
+  max-speed:
+    type: int
+    default: 1000
+    description: Pointer speed at full deflection in relative mode, in counts per second.
+
+  filter-time-constant-ms:
+    type: int
+    default: 12
+    description: |
+      Time constant of the low-pass filter that smooths the samples, in milliseconds. A longer
+      time removes more noise and delays the stick more. 0 turns the filter off. The filter
+      uses the measured time between samples, and smooths little when its time constant is
+      shorter than that.
+
+  deadzone-percent:
+    type: int
+    default: 6
+    description: Deadzone around the idle centre, in percent of full-scale.
+
+  recenter-window-percent:
+    type: int
+    default: 3
+    description: |
+      The stick counts as idle while it stays within this distance of the centre,
+      in percent of full-scale. Keep it above the idle noise of the stick, or the
+      centre stops following drift.
+
+  recenter-delay-ms:
+    type: int
+    default: 500
+    description: Time the stick must stay idle before the centre starts to follow it.
+
+  recenter-limit-percent:
+    type: int
+    default: 5
+    description: |
+      The centre never moves further than this from its start-up value, in percent
+      of full-scale. Keep it at or below deadzone-percent, or a stick that is held
+      slightly off its rest position drags the centre along, and the pointer creeps
+      after the stick is let go. A lower limit lets the centre follow less drift.
+
+  inverted-x:
+    type: boolean
+    description: Invert the X axis.
+
+  inverted-y:
+    type: boolean
+    description: Invert the Y axis.
+
+  swapped-x-y:
+    type: boolean
+    description: Swap the X and Y axes, before inverting.
